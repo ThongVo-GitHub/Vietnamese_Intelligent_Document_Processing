@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = (
-        "postgresql+psycopg://docflow:docflow@localhost:5432/docflow"
+        "postgresql+psycopg://docflow:docflow@localhost:5433/docflow"
     )
 
 @lru_cache
