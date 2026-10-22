@@ -8,10 +8,14 @@ WORKDIR /app
 
 COPY pyproject.toml ./
 COPY app ./app
+COPY alembic.ini ./
+COPY alembic ./alembic
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install . \
-    && useradd --create-home --uid 10001 appuser
+    && useradd --create-home --uid 10001 appuser \
+    && mkdir -p /app/data/uploads \
+    && chown -R appuser:appuser /app/data
 
 USER appuser
 
