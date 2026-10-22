@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     )
     upload_dir: Path = Path("data/uploads")
     max_upload_size_bytes: int = 10 * 1024 * 1024
+    worker_poll_interval_seconds: float = 2.0
 
 
 @lru_cache

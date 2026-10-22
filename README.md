@@ -12,14 +12,17 @@ Dự án đang ở giai đoạn xây dựng nền tảng.
 
 - FastAPI backend và tài liệu OpenAPI/Swagger.
 - Health check và database readiness check.
-- PostgreSQL kết hợp pgvector.
-- Dockerfile và Docker Compose.
+- PostgreSQL, SQLAlchemy models và Alembic migration ban đầu.
+- API tạo hồ sơ, upload tài liệu và theo dõi processing job.
+- Kiểm tra định dạng PDF, PNG, JPEG, XML; giới hạn dung lượng và tính SHA-256.
+- Background worker nhận job an toàn bằng PostgreSQL row locking.
+- Mock AI client theo `AnalysisResult` contract để phát triển độc lập với AI engine.
+- Docker Compose cho PostgreSQL, migration, backend và worker.
 - Pydantic schema cho OCR block, bounding box và kết quả phân tích.
-- Unit test cho API và schema dữ liệu.
+- Unit và integration test cho API, schema dữ liệu và worker.
 
 Đang phát triển:
 
-- Upload hồ sơ và quản lý processing job.
 - Tiền xử lý hình ảnh bằng OpenCV.
 - OCR tiếng Việt và nhận diện bảng.
 - Phân loại hợp đồng, hóa đơn và biểu mẫu.
@@ -60,16 +63,23 @@ API và giao diện người dùng
 
 | Thành phần | Công nghệ | Vai trò |
 |---|---|---|
-| Backend API | FastAPI | Cung cấp API và OpenAPI |
-| Data contract | Pydantic | Kiểm tra cấu trúc dữ liệu |
-| ORM | SQLAlchemy | Truy cập cơ sở dữ liệu |
-| Migration | Alembic | Quản lý thay đổi schema |
-| Database | PostgreSQL | Lưu hồ sơ và kết quả xử lý |
-| Vector search | pgvector | Lưu embedding và tìm kiếm ngữ nghĩa |
-| Testing | pytest | Kiểm thử tự động |
-| Container | Docker Compose | Chạy các dịch vụ đồng nhất |
+| Ngôn ngữ | Python 3.11+ (Docker dùng Python 3.12) | Xây dựng backend và worker |
+| Backend API | FastAPI, Uvicorn | Cung cấp REST API và OpenAPI |
+| Data contract và cấu hình | Pydantic v2, pydantic-settings | Kiểm tra dữ liệu và đọc biến môi trường |
+| ORM | SQLAlchemy 2 | Ánh xạ model và truy cập cơ sở dữ liệu |
+| PostgreSQL driver | Psycopg 3 | Kết nối Python với PostgreSQL |
+| Migration | Alembic | Quản lý phiên bản database schema |
+| Database | PostgreSQL 17 | Lưu hồ sơ, file metadata và processing job |
+| Job processing | PostgreSQL row locking, Python polling worker | Nhận và xử lý job nền an toàn |
+| File ingestion | python-multipart, defusedxml, SHA-256 | Nhận file và kiểm tra nội dung upload |
+| File storage | Local filesystem, Docker named volume | Chia sẻ file giữa backend và worker |
+| AI contract hiện tại | Python Protocol, `MockAIEngineClient` | Mô phỏng AI để backend phát triển độc lập |
+| Vector search dự kiến | pgvector | Lưu embedding và tìm kiếm ngữ nghĩa ở giai đoạn sau |
+| Testing | pytest, FastAPI TestClient | Kiểm thử API, database và worker |
+| Container | Docker, Docker Compose | Chạy PostgreSQL, migration, backend và worker |
+| CI | GitHub Actions | Chạy kiểm tra tự động trên pull request |
 
-Các thành phần OCR, NLP và AI sẽ được bổ sung ở các giai đoạn tiếp theo.
+`MockAIEngineClient` chỉ trả dữ liệu mẫu đúng `AnalysisResult` contract. OCR, NLP và AI thật thuộc `ai-engine` và sẽ được tích hợp ở giai đoạn tiếp theo.
 
 ## Yêu cầu hệ thống
 
@@ -108,6 +118,8 @@ Không commit file `.env` lên Git.
 ```powershell
 docker compose up -d --build
 ```
+
+Docker Compose sẽ đợi PostgreSQL sẵn sàng, chạy Alembic migration, sau đó khởi động backend và background worker dùng chung volume upload.
 
 ### 4. Kích hoạt pgvector
 
@@ -199,6 +211,9 @@ Trên Windows chưa cài GNU Make, có thể sử dụng trực tiếp các lệ
 | GET | `/` | Thông tin dịch vụ |
 | GET | `/health` | Kiểm tra backend đang hoạt động |
 | GET | `/health/ready` | Kiểm tra backend kết nối database |
+| POST | `/dossiers` | Tạo hồ sơ mới |
+| POST | `/dossiers/{dossier_id}/files` | Upload tài liệu và tạo processing job |
+| GET | `/jobs/{job_id}` | Theo dõi trạng thái processing job |
 
 ## Cấu trúc repository
 
