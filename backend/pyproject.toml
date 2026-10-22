@@ -13,8 +13,10 @@ dependencies = [
     "fastapi>=0.115",
     "psycopg[binary]>=3.2",
     "pydantic-settings>=2.6",
+    "python-multipart>=0.0.20",
     "sqlalchemy>=2.0",
     "uvicorn[standard]>=0.32",
+    "defusedxml>=0.7.1",
 ]
 
 [project.optional-dependencies]
