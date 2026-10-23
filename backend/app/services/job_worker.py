@@ -8,6 +8,7 @@ from app.models.processing_job import ProcessingJob
 from app.models.source_file import SourceFile
 from app.schemas.common import AnalysisResult
 from app.services.ai_engine import AIEngineClient
+from app.services.analysis_results import save_analysis_result
 
 
 def claim_next_job(session: Session) -> ProcessingJob | None:
@@ -49,6 +50,8 @@ def process_job(
     if job.status != "running":
         raise ValueError("Job must be running before processing")
 
+    job_id = job.id
+
     try:
         if job.source_file_id is None:
             raise ValueError("Job does not have a source file")
@@ -61,13 +64,23 @@ def process_job(
             file_path=upload_dir / source_file.storage_key,
             media_type=source_file.media_type,
         )
-    except Exception as exc:
-        job.status = "failed"
-        job.current_step = "failed"
-        job.error_message = str(exc)
-        job.finished_at = datetime.now(timezone.utc)
 
-        session.commit()
+        save_analysis_result(
+            session=session,
+            job=job,
+            result=result,
+        )
+    except Exception as exc:
+        session.rollback()
+
+        failed_job = session.get(ProcessingJob, job_id)
+        if failed_job is not None:
+            failed_job.status = "failed"
+            failed_job.current_step = "failed"
+            failed_job.error_message = str(exc)
+            failed_job.finished_at = datetime.now(timezone.utc)
+            session.commit()
+
         raise
 
     job.status = "succeeded"

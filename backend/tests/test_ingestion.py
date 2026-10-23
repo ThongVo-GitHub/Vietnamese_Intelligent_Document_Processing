@@ -100,6 +100,16 @@ def test_upload_file_creates_job_and_stores_file(
     assert job_response.status_code == 200
     assert job_response.json()["status"] == "queued"
     assert job_response.json()["progress"] == 0
+    result_response = test_client.get(
+        f"/jobs/{body['job_id']}/result"
+    )
+
+    assert result_response.status_code == 404
+    assert result_response.json() == {
+        "detail": (
+            "Analysis result not found for the specified job"
+        )
+    }
 
 
 def test_upload_rejects_unsupported_file(

@@ -17,9 +17,12 @@ Dự án đang ở giai đoạn xây dựng nền tảng.
 - Kiểm tra định dạng PDF, PNG, JPEG, XML; giới hạn dung lượng và tính SHA-256.
 - Background worker nhận job an toàn bằng PostgreSQL row locking.
 - Mock AI client theo `AnalysisResult` contract để phát triển độc lập với AI engine.
+- Lưu kết quả phân tích, tài liệu phân loại, trường trích xuất và OCR block vào PostgreSQL.
+- API đọc kết quả phân tích theo processing job để frontend sử dụng.
 - Docker Compose cho PostgreSQL, migration, backend và worker.
 - Pydantic schema cho OCR block, bounding box và kết quả phân tích.
 - Unit và integration test cho API, schema dữ liệu và worker.
+
 
 Đang phát triển:
 
@@ -69,7 +72,7 @@ API và giao diện người dùng
 | ORM | SQLAlchemy 2 | Ánh xạ model và truy cập cơ sở dữ liệu |
 | PostgreSQL driver | Psycopg 3 | Kết nối Python với PostgreSQL |
 | Migration | Alembic | Quản lý phiên bản database schema |
-| Database | PostgreSQL 17 | Lưu hồ sơ, file metadata và processing job |
+| Database | PostgreSQL 17 | Lưu hồ sơ, file metadata, processing job và kết quả phân tích |
 | Job processing | PostgreSQL row locking, Python polling worker | Nhận và xử lý job nền an toàn |
 | File ingestion | python-multipart, defusedxml, SHA-256 | Nhận file và kiểm tra nội dung upload |
 | File storage | Local filesystem, Docker named volume | Chia sẻ file giữa backend và worker |
@@ -214,6 +217,7 @@ Trên Windows chưa cài GNU Make, có thể sử dụng trực tiếp các lệ
 | POST | `/dossiers` | Tạo hồ sơ mới |
 | POST | `/dossiers/{dossier_id}/files` | Upload tài liệu và tạo processing job |
 | GET | `/jobs/{job_id}` | Theo dõi trạng thái processing job |
+| GET | `/jobs/{job_id}/result` | Đọc kết quả phân tích đã lưu của processing job |
 
 ## Cấu trúc repository
 
