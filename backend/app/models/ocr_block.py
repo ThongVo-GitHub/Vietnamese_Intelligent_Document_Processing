@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -20,6 +21,14 @@ from app.models.base import Base
 class OcrBlock(Base):
     __tablename__ = "ocr_blocks"
     __table_args__ = (
+        Index(
+            "ix_ocr_blocks_text_trgm",
+            "text",
+            postgresql_using="gin",
+            postgresql_ops={
+                "text": "gin_trgm_ops",
+            },
+        ),
         UniqueConstraint(
             "page_id",
             "block_index",

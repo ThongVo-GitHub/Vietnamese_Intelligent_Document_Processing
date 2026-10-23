@@ -81,6 +81,8 @@ API và giao diện người dùng
 | Testing | pytest, FastAPI TestClient | Kiểm thử API, database và worker |
 | Container | Docker, Docker Compose | Chạy PostgreSQL, migration, backend và worker |
 | CI | GitHub Actions | Chạy kiểm tra tự động trên pull request |
+| Đối chiếu chứng từ | Python rule engine, SQLAlchemy, PostgreSQL | Liên kết Hợp đồng - Hóa đơn - Đề nghị thanh toán, kiểm tra quy tắc và tạo cảnh báo |
+| Tìm kiếm văn bản | PostgreSQL `unaccent`, `pg_trgm`, GIN index | Tìm kiếm không dấu trong trường trích xuất và nội dung OCR |
 
 `MockAIEngineClient` chỉ trả dữ liệu mẫu đúng `AnalysisResult` contract. OCR, NLP và AI thật thuộc `ai-engine` và sẽ được tích hợp ở giai đoạn tiếp theo.
 
