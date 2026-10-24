@@ -32,6 +32,7 @@ from app.schemas.reconciliation import (
     AlertResponse,
     AlertStatusUpdate,
     ReconciliationResponse,
+    DossierCompletenessResponse
 )
 from app.services.reconciliation_engine import (
     run_reconciliation,
@@ -41,6 +42,9 @@ from app.models.audit_event import AuditEvent
 from app.schemas.search import DocumentSearchResponse
 from app.services.document_search import (
     search_dossier_documents,
+)
+from app.services.dossier_completeness import (
+    get_dossier_completeness
 )
 
 router = APIRouter(
@@ -173,6 +177,23 @@ def reconcile_dossier(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Dossier not found",
+        )
+
+    completeness = get_dossier_completeness(
+        session=session,
+        dossier_id=dossier_id
+    )
+
+    if not completeness.can_reconcile:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "code": "DOSSIER_INCOMPLETE",
+                "message": (
+                    "Dossier requires contract, invoice and payment request"
+                ),
+                **completeness.model_dump(mode="json"),
+            },
         )
 
     try:
@@ -411,4 +432,25 @@ def search_documents(
         min_confidence=min_confidence,
         limit=limit,
         offset=offset,
+    )
+
+@router.get(
+    "/{dossier_id}/completeness",
+    response_model=DossierCompletenessResponse
+)
+def read_dossier_completeness(
+    dossier_id: UUID,
+    session: DbSession
+) -> DossierCompletenessResponse:
+    dossier = session.get(Dossier, dossier_id)
+
+    if dossier is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dossier not found"
+        )
+
+    return get_dossier_completeness(
+        session=session,
+        dossier_id=dossier_id
     )
