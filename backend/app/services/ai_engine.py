@@ -1,6 +1,7 @@
+from __future__ import annotations
 from pathlib import Path
 from time import perf_counter
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import httpx
 
@@ -11,9 +12,9 @@ from app.schemas.common import (
     DocumentType,
     ExtractedField,
 )
-from app.services.ai.classifier import classify_and_split_pages
-from app.services.ai.extractor import populate_segment_fields
-from app.services.ai.pdf_reader import PageReadOutput, read_document_pages
+
+if TYPE_CHECKING:
+    from app.services.ai.pdf_reader import PageReadOutput
 
 
 class AIEngineClient(Protocol):
@@ -61,6 +62,8 @@ class LocalAIEngineClient:
         media_type: str = "application/pdf",
     ) -> list[PageReadOutput]:
         """Read pages and extract OCR blocks with normalized bounding boxes [0..1]."""
+        from app.services.ai.pdf_reader import read_document_pages
+
         return read_document_pages(file_path=file_path, media_type=media_type)
 
     def analyze_document(
@@ -69,6 +72,9 @@ class LocalAIEngineClient:
         file_path: Path,
         media_type: str = "application/pdf",
     ) -> AnalysisResult:
+        from app.services.ai.classifier import classify_and_split_pages
+        from app.services.ai.extractor import populate_segment_fields
+
         start_ts = perf_counter()
         pages_output = self.extract_pages(
             file_path=file_path,
