@@ -1,9 +1,9 @@
 import logging
-
 from time import sleep
+
 from app.config import get_settings
 from app.database import SessionLocal
-from app.services.ai_engine import MockAIEngineClient
+from app.services.ai_engine import build_ai_engine_client
 from app.services.job_worker import claim_next_job, process_job
 
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def run_once() -> bool:
     settings = get_settings()
-    ai_client = MockAIEngineClient()
+    ai_client = build_ai_engine_client(settings)
 
     with SessionLocal() as session:
         job = claim_next_job(session)
