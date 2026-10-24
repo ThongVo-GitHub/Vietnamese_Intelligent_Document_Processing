@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -22,6 +23,38 @@ from app.models.base import Base
 class ExtractedFieldRecord(Base):
     __tablename__ = "extracted_fields"
     __table_args__ = (
+        Index(
+            "ix_extracted_fields_name_trgm",
+            "name",
+            postgresql_using="gin",
+            postgresql_ops={
+                "name": "gin_trgm_ops",
+            },
+        ),
+        Index(
+            "ix_extracted_fields_raw_value_trgm",
+            "raw_value",
+            postgresql_using="gin",
+            postgresql_ops={
+                "raw_value": "gin_trgm_ops",
+            },
+        ),
+        Index(
+            "ix_extracted_fields_normalized_value_trgm",
+            "normalized_value",
+            postgresql_using="gin",
+            postgresql_ops={
+                "normalized_value": "gin_trgm_ops",
+            },
+        ),
+        Index(
+            "ix_extracted_fields_evidence_text_trgm",
+            "evidence_text",
+            postgresql_using="gin",
+            postgresql_ops={
+                "evidence_text": "gin_trgm_ops",
+            },
+        ),
         UniqueConstraint(
             "document_id",
             "field_index",
