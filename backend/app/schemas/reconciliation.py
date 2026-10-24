@@ -3,6 +3,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
+from app.schemas.common import DocumentType
 
 
 class DocumentLinkResponse(BaseModel):
@@ -16,6 +17,18 @@ class DocumentLinkResponse(BaseModel):
     confidence: float
     matched_by: str
     created_at: datetime
+
+
+class DossierCompletenessResponse(BaseModel):
+    dossier_id: UUID
+    status: Literal[
+        "incomplete",
+        "ready"
+    ]
+    required_document_types: list[DocumentType]
+    present_document_types: list[DocumentType]
+    missing_document_types: list[DocumentType]
+    can_reconcile: bool
 
 
 class AlertResponse(BaseModel):
