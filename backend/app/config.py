@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     upload_dir: Path = Path("data/uploads")
     max_upload_size_bytes: int = 10 * 1024 * 1024
     worker_poll_interval_seconds: float = 2.0
+    ai_engine_mode: str = "local"
+    ai_engine_url: str = "http://ai-engine:8001"
+    ai_engine_timeout_seconds: float = 60.0
 
 
 @lru_cache
